@@ -46,6 +46,11 @@ input[type=text],textarea{width:100%;padding:10px 12px;border:2px solid #52b788;
 textarea{resize:vertical}
 .subtotal{margin-top:10px;padding:9px 12px;background:#f0faf4;border-radius:8px;font-size:12px;color:#2d6a4f}
 .price-note{margin:12px 0;padding:10px 14px;background:#fffbe6;border:1px solid #ffe58f;border-radius:8px;font-size:12px;color:#7d6608;line-height:1.5}
+.wechat-id-box{display:flex;align-items:center;gap:8px;background:#f0faf4;border:2px solid #52b788;border-radius:10px;padding:10px 16px;margin:12px 0}
+.wechat-id-label{font-size:13px;color:#555}
+.wechat-id-val{font-size:18px;font-weight:800;color:#1b4332;flex:1;letter-spacing:1px}
+.btn-copy-id{padding:5px 12px;background:#52b788;color:#fff;border:none;border-radius:6px;font-size:12px;font-weight:700;cursor:pointer}
+.device-hint{font-size:12px;color:#666;line-height:1.6;text-align:left;background:#f8f8f8;border-radius:8px;padding:8px 12px;margin-top:6px}
 .urgency-card{display:flex;justify-content:space-between;align-items:center}
 .urgency-label{font-weight:700;font-size:14px;color:#1b4332}
 .urgency-desc{font-size:12px;color:#888;margin-top:2px}
@@ -107,8 +112,11 @@ en: {
   back:"← Back", next:"Next →", estimate:"See Estimate →",
   nSelected:(n)=>`${n} alteration${n>1?"s":""} selected — base total:`,
   surcharge:(l,b)=>`${l} surcharge (${b})`,
-  scanQR:"Scan to book on WeChat", scanSub:"Open WeChat and scan the QR code below",
-  copyHint:"Paste this after scanning the QR code",
+  scanQR:"Book via WeChat", scanSub:"",
+  wechatId:"WeChat ID", wechatIdVal:"justinmel",
+  mobileHint:"📱 On phone: long-press the QR code → \"Scan QR Code\" to add WeChat",
+  desktopHint:"💻 On computer: search <strong>justinmel</strong> in WeChat to add",
+  copyHint:"Copy your selections and paste to WeChat:",
   copyBtn:"Copy My Selections", copied:"✓ Copied!", closeQR:"← Back",
   otherG:"Other", otherGph:"Describe your garment (e.g. swimwear, uniform)...",
   otherA:"Other (please specify)", otherAph:"Describe the alteration you need...",
@@ -166,8 +174,11 @@ zh: {
   back:"← 返回", next:"下一步 →", estimate:"查看估算 →",
   nSelected:(n)=>`已选 ${n} 项修改 — 基础合计：`,
   surcharge:(l,b)=>`${l}附加费（${b}）`,
-  scanQR:"扫码微信预约", scanSub:"打开微信扫描下方二维码，与我们联系",
-  copyHint:"扫码后请将此内容粘贴发送给我们",
+  scanQR:"微信预约", scanSub:"",
+  wechatId:"微信号", wechatIdVal:"justinmel",
+  mobileHint:"📱 手机：长按二维码 → 「识别图中二维码」即可添加微信",
+  desktopHint:"💻 电脑：在微信中搜索 <strong>justinmel</strong> 添加好友",
+  copyHint:"复制以下内容，添加微信后发送给我们：",
   copyBtn:"复制我的选择", copied:"✓ 已复制！", closeQR:"← 返回",
   otherG:"其他", otherGph:"请描述您的服装类型（如泳装、制服）…",
   otherA:"其他（请注明）", otherAph:"请描述您需要的修改…",
@@ -223,6 +234,7 @@ let state = {
   urgency: "standard",
   showQR: false,
   copied: false,
+  copiedId: false,
 };
 
 function t(){ return LANG[state.lang]; }
@@ -419,9 +431,15 @@ function renderQR(){
     <div class="center">
       <div style="font-size:30px;margin-bottom:8px">💬</div>
       <h2>${l.scanQR}</h2>
-      <p>${l.scanSub}</p>
-      <img class="qr-img" src="${QR_IMG}" alt="WeChat QR Code"/>
-      <div class="copy-box">
+      <div class="wechat-id-box">
+        <span class="wechat-id-label">${l.wechatId}：</span>
+        <span class="wechat-id-val">justinmel</span>
+        <button class="btn-copy-id" id="btnCopyId">${state.copiedId?"✓":"复制"}</button>
+      </div>
+      <div class="device-hint">${l.mobileHint}</div>
+      <img class="qr-img" src="${QR_IMG}" alt="WeChat QR Code" style="touch-action:manipulation"/>
+      <div class="device-hint" style="margin-top:8px">${l.desktopHint}</div>
+      <div class="copy-box" style="margin-top:16px">
         <div class="hint">${l.copyHint}</div>
         <pre>${escHtml(msg)}</pre>
       </div>
@@ -477,6 +495,14 @@ function attachEvents(){
     navigator.clipboard.writeText(buildMsg().replace(/\n/g,"\n")).then(()=>{
       setState({copied:true});
       setTimeout(()=>setState({copied:false}),3000);
+    });
+  });
+
+  const copyIdBtn=document.getElementById("btnCopyId");
+  if(copyIdBtn) copyIdBtn.addEventListener("click",()=>{
+    navigator.clipboard.writeText("justinmel").then(()=>{
+      setState({copiedId:true});
+      setTimeout(()=>setState({copiedId:false}),3000);
     });
   });
 }
