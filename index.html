@@ -546,4 +546,17 @@ function attachEvents(){
 
   const copyIdBtn=document.getElementById("btnCopyId");
   if(copyIdBtn) copyIdBtn.addEventListener("click",()=>{
-    navigator.clipboard.writeText("justinmel"
+    navigator.clipboard.writeText("justinmel").then(()=>{
+      const orig=copyIdBtn.textContent;
+      copyIdBtn.textContent="✓ 已复制";
+      setTimeout(()=>copyIdBtn.textContent=orig,2000);
+    });
+  });
+}
+
+render();
+attachEvents();
+
+</script>
+</body>
+</html>
